@@ -1,13 +1,11 @@
 import connectDB from "./db/index.js";
-import express from "express";
+
 import { app } from "./app.js";
 import router from "./routes/user.js";
 import { jwtRouter } from "./routes/auth.js";
 
 import userRouter from "././routes/Verify/Varify.js";
 import transaction from "./routes/transection.js";
-
-
 
 const startServer = (port) => {
   return app.listen(port);
@@ -42,8 +40,6 @@ connectDB()
     app.use(router);
     // transction
     app.use(transaction);
-
-
     // end router call
     app.get("/", (req, res) => {
       res.send(`Server is running at http://localhost:${PORT}`);

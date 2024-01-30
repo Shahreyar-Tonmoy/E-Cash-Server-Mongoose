@@ -108,9 +108,9 @@ router.put("/users/update/:email", async (req, res) => {
 router.get("/usersNumber/:phoneNumber", async (req, res) => {
   try {
     const phoneNumber = req.params.phoneNumber;
+    const role = "user";
 
-    const query = { phoneNumber: phoneNumber };
-    const user = await User.findOne(query);
+    const user = await User.findOne({ phoneNumber, role: role });
 
     if (!user) {
       return res.status(404).send({ error: "Number not found" });
@@ -154,6 +154,25 @@ router.put("/myAmount/:phoneNumber", async (req, res) => {
   const result = await User.updateOne(filter, Updates, options);
 
   res.send(result);
+});
+
+// agent check
+router.get("/agentNumber/:phoneNumber", async (req, res) => {
+  try {
+    const phoneNumber = req.params.phoneNumber;
+
+    const role = "agent";
+    const user = await User.findOne({ phoneNumber, role: role });
+
+    if (!user) {
+      return res.status(404).send({ error: "Number not found" });
+    }
+
+    res.send(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Internal Server Error" });
+  }
 });
 
 export default router;
