@@ -1,6 +1,6 @@
 import express from 'express';
 import verifyTokenMiddleware from './../../middlewares/authMiddleware.js';
-import { User } from './../../medels/User.model.js'; 
+import { User } from '../../models/User.model.js'; 
 
 const userRouter = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { User } from "../medels/User.model.js";
+import { User } from "../models/User.model.js";
 import verifyTokenMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -69,11 +69,17 @@ router.post("/users", async (req, res) => {
 
 // user count
 
-router.get("/api/count", async (req, res) => {
-  const count = await User.countDocuments();
+router.get("/api/user/count", async (req, res) => {
+  try {
+    // Assuming 'user' is the role you are interested in
+    const count = await User.countDocuments({ role: 'user' });
 
-  res.json({ count });
-});
+    res.json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+})
 
 // update
 

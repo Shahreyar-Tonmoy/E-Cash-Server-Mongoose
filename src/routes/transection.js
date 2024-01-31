@@ -1,7 +1,7 @@
 // routes/transaction.js
 import express from "express";
-import { Transaction } from "./../medels/User.model.js";
-import { startOfWeek, addWeeks } from 'date-fns';
+import { Transaction } from "./../models/User.model.js";
+import { startOfWeek, addWeeks } from "date-fns";
 const transaction = express.Router();
 
 transaction.post("/transaction", async (req, res) => {
@@ -66,6 +66,8 @@ transaction.get("/get/users/transaction/:from", async (req, res) => {
   }
 });
 
+
+
 // get total amount transaction
 
 transaction.get("/get/total/transaction", async (req, res) => {
@@ -86,6 +88,84 @@ transaction.get("/get/total/transaction", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+// get only cash in todays agent transaction
+
+
+
+transaction.get("/get/today/agentcashin/transaction/:from", async (req, res) => {
+  try {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    console.log(req.params.from);
+
+    const todayAgentTransactions = await Transaction.find({
+      createdAt: {
+        $gte: currentDate,
+        $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+      },
+      fromRole: 'agent',
+      from: req.params.from, 
+    });
+
+
+
+
+
+    const totalAmountTodayByAgents = todayAgentTransactions.reduce((total, transaction) => {
+      return total + transaction.amounts;
+    }, 0);
+
+    res.status(200).json({
+      totalAmountTodayByAgents: totalAmountTodayByAgents,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// get only cash out todays agent transaction
+
+transaction.get("/get/today/agentcashout/transaction/:to", async (req, res) => {
+  try {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    console.log(req.params.from);
+
+    const todayAgentTransactions = await Transaction.find({
+      createdAt: {
+        $gte: currentDate,
+        $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+      },
+      fromRole: 'user',
+      to: req.params.to, 
+    });
+
+
+
+
+
+    const totalAmountTodayByAgents = todayAgentTransactions.reduce((total, transaction) => {
+      return total + transaction.amounts;
+    }, 0);
+
+    res.status(200).json({
+      totalAmountTodayByAgents: totalAmountTodayByAgents,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
+
+
+
+
+
 
 // get transaction by month
 
@@ -120,7 +200,6 @@ transaction.get("/get/month/transaction", async (req, res) => {
 
 // get transaction by weak
 
-
 transaction.get("/get/weak/transaction", async (req, res) => {
   try {
     // Get the current date
@@ -136,8 +215,8 @@ transaction.get("/get/weak/transaction", async (req, res) => {
           createdAt: {
             $gte: startOfCurrentWeek,
             $lt: addWeeks(startOfCurrentWeek, 1),
-          }
-        }
+          },
+        },
       },
       {
         $group: {
@@ -160,10 +239,7 @@ transaction.get("/get/weak/transaction", async (req, res) => {
   }
 });
 
-
-
 // get previous month and now month amount deference of percentage
-
 
 transaction.get("/get/percentage/transaction", async (req, res) => {
   try {
@@ -217,17 +293,25 @@ transaction.get("/get/percentage/transaction", async (req, res) => {
       },
     ]);
 
+    // Extract currentMonthTotal and previousMonthTotal
+    const currentMonthTotal =
+      currentMonthResult.length > 0 ? currentMonthResult[0].totalAmount : 0;
+    const previousMonthTotal =
+      previousMonthResult.length > 0 ? previousMonthResult[0].totalAmount : 0;
+
     // Calculate percentage difference
-    let percentageDifference = 0;
-    if (currentMonthResult.length > 0 && previousMonthResult.length > 0) {
-      const currentMonthTotal = currentMonthResult[0].totalAmount;
-      const previousMonthTotal = previousMonthResult[0].totalAmount;
+    const percentageDifference =
+      previousMonthTotal !== 0
+        ? ((currentMonthTotal - previousMonthTotal) /
+            (previousMonthTotal + currentMonthTotal)) *
+          100
+        : 0;
 
-      percentageDifference =
-        ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
-    }
+    console.log(currentMonthTotal, previousMonthTotal, percentageDifference);
 
-    res.status(200).json({ percentageDifference: percentageDifference });
+    res.status(200).json({
+      percentageDifference,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
