@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      unique: true,
+     
     },
     email: {
       type: String,
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
     },
     dateOfBirth: {
       type: String,
-      unique: true,
+      unique: false,
     },
     image: {
       type: String,

@@ -36,34 +36,44 @@ router.get("/users/:email", async (req, res) => {
 });
 
 // POST route to create a new user
-router.post("/users", async (req, res) => {
+router.post('/users', async (req, res) => {
   try {
     const user = req.body;
 
     // Validate that the required fields are present
-    if (!user || !user.email) {
-      return res
-        .status(400)
-        .json({ message: "Email is required", insertedId: null });
+    if (!user || !user.email || !user.name) {
+      return res.status(400).json({ message: 'Name and email are required', insertedId: null });
     }
 
-    const existingUser = await User.findOne({ email: user.email });
+    const existingUser = await User.findOne({ name: user.name });
 
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User already exists", insertedId: null });
+      return res.status(400).json({ message: 'User with the same name already exists Change Your Name', insertedId: null });
     } else {
       const newUser = new User(user);
 
+      // Handle null dateOfBirth
+      if (newUser.dateOfBirth === null || newUser.dateOfBirth === undefined) {
+        // Set a default value or handle as per your requirements
+        newUser.dateOfBirth = 'N/A';
+      }
+
       await newUser.save();
 
-      res.status(201).json({ message: "User created successfully" });
+      console.log(newUser);
+
+      res.status(201).json({ message: 'User created successfully' });
     }
   } catch (error) {
     console.log(error);
+
+    if (error.code === 11000 && error.keyPattern && error.keyValue) {
+      // Duplicate key error
+      return res.status(400).json({ message: `Duplicate key error for key: ${JSON.stringify(error.keyValue)}`, insertedId: null });
+    }
+
     // Handle other errors if needed
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -92,7 +102,7 @@ router.put("/users/update/:email", async (req, res) => {
     console.log(updatedUser);
     const updates = {
       $set: {
-        name: updatedUser.Name,
+        name: updatedUser.name,
         phoneNumber: updatedUser.phoneNumber,
         image: updatedUser.image,
         dateOfBirth: updatedUser.dateOfBirth,
