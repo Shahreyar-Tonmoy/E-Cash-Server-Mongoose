@@ -36,46 +36,31 @@ router.get("/users/:email", async (req, res) => {
 });
 
 // POST route to create a new user
-router.post('/users', async (req, res) => {
+router.post("/add/users", async (req, res) => {
   try {
-    const user = req.body;
+    const userData = req.body;
 
-    // Validate that the required fields are present
-    if (!user || !user.email || !user.name) {
-      return res.status(400).json({ message: 'Name and email are required', insertedId: null });
-    }
-
-    const existingUser = await User.findOne({ name: user.name });
-
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with the same name already exists Change Your Name', insertedId: null });
-    } else {
-      const newUser = new User(user);
-
-      // Handle null dateOfBirth
-      if (newUser.dateOfBirth === null || newUser.dateOfBirth === undefined) {
-        // Set a default value or handle as per your requirements
-        newUser.dateOfBirth = 'N/A';
-      }
-
-      await newUser.save();
-
-      console.log(newUser);
-
-      res.status(201).json({ message: 'User created successfully' });
+      return res.status(400).json({ message: "User already exists", insertedId: null });
     }
+
+    // Create a new user using the User model
+    const newUser = new User(userData);
+
+    // Save the new user to the database
+    await newUser.save();
+
+    // Respond with a success message and the created user object
+    res.status(201).json({ message: 'User created successfully', user: newUser });
   } catch (error) {
-    console.log(error);
-
-    if (error.code === 11000 && error.keyPattern && error.keyValue) {
-      // Duplicate key error
-      return res.status(400).json({ message: `Duplicate key error for key: ${JSON.stringify(error.keyValue)}`, insertedId: null });
-    }
-
-    // Handle other errors if needed
+    // Handle errors
+    console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 // user count
 

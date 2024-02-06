@@ -2,9 +2,9 @@ import express from 'express';
 import verifyTokenMiddleware from './../../middlewares/authMiddleware.js';
 import { User } from '../../models/User.model.js'; 
 
-const userRouter = express.Router();
+const Verify = express.Router();
 
-userRouter.get("/user/admin/:email", verifyTokenMiddleware, async (req, res) => {
+Verify.get("/user/admin/:email", verifyTokenMiddleware, async (req, res) => {
   const email = req.params.email;
   
   if (email !== req.decoded?.email) {
@@ -22,7 +22,7 @@ userRouter.get("/user/admin/:email", verifyTokenMiddleware, async (req, res) => 
   res.send({ admin });
 });
 
-userRouter.get("/user/agent/:email", verifyTokenMiddleware, async (req, res) => {
+Verify.get("/user/agent/:email", verifyTokenMiddleware, async (req, res) => {
   const email = req.params.email;
   
   if (email !== req.decoded?.email) {
@@ -39,4 +39,4 @@ userRouter.get("/user/agent/:email", verifyTokenMiddleware, async (req, res) => 
   res.send({ agent });
 });
 
-export default userRouter;
+export default Verify;

@@ -4,8 +4,9 @@ import { app } from "./app.js";
 import router from "./routes/user.js";
 import { jwtRouter } from "./routes/auth.js";
 
-import userRouter from "././routes/Verify/Varify.js";
+
 import transaction from "./routes/transection.js";
+import Verify from "././routes/Verify/Varify.js";
 
 const startServer = (port) => {
   return app.listen(port);
@@ -34,8 +35,10 @@ connectDB()
   .then(() => {
     // jwt token
     app.use(jwtRouter);
+
     // verify
-    app.use(userRouter);
+    app.use(Verify);
+
     // get & post all user
     app.use(router);
     // transction
