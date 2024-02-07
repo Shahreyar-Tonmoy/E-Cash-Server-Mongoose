@@ -221,6 +221,9 @@ router.post("/api/savings/:phoneNumber", async (req, res) => {
   }
 });
 
+// withdraw
+
+
 router.post("/api/withdraw/:phoneNumber", async (req, res) => {
   try {
     const phoneNumber = req.params.phoneNumber;
@@ -262,6 +265,30 @@ router.post("/api/withdraw/:phoneNumber", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+// savings history
+router.get("/api/savings/history/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Find user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Retrieve savings transactions for the user
+    const savingsTransactions = await SavingsTransaction.find({ userId: userId });
+
+    return res.json({ user, savingsTransactions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 
 export default router;
