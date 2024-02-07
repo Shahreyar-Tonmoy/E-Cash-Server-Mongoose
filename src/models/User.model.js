@@ -37,6 +37,29 @@ const transactionSchema = new mongoose.Schema(
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
+const savingsTransactionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ['deposit', 'withdraw'],
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const SavingsTransaction = mongoose.model('SavingsTransaction', savingsTransactionSchema);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -66,10 +89,14 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    savings: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
 const User = mongoose.model("User", userSchema);
 
-export { User, Transaction };
+export { User, Transaction,SavingsTransaction };

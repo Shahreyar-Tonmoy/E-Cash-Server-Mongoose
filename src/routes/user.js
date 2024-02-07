@@ -1,5 +1,5 @@
 import express from "express";
-import { User } from "../models/User.model.js";
+import { SavingsTransaction, User } from "../models/User.model.js";
 import verifyTokenMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -175,5 +175,93 @@ router.get("/agentNumber/:phoneNumber", async (req, res) => {
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
+
+
+// add savings
+
+router.post("/api/savings/:phoneNumber", async (req, res) => {
+  try {
+    const phoneNumber = req.params.phoneNumber;
+    const { saving } = req.body;
+
+    const user = await User.findOne({ phoneNumber: phoneNumber });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newAmount = parseInt(user.amount) - parseInt(saving);
+    user.amount = newAmount;
+
+    let newSavingsAmount = user.savings;
+
+    if (parseInt(saving) > 0) {
+      newSavingsAmount += parseInt(saving);
+      user.savings = newSavingsAmount;
+      await user.save();
+
+      // Create a new savings transaction record for deposit
+      const depositTransaction = new SavingsTransaction({
+        userId: user._id,
+        type: 'deposit',
+        amount: parseInt(saving),
+      });
+      await depositTransaction.save();
+
+      console.log("Savings increased by:", saving);
+    }
+
+    await user.save();
+    console.log("New Amount:", newAmount);
+
+    return res.json({ message: 'Amount and Savings updated successfully', newAmount, newSavingsAmount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.post("/api/withdraw/:phoneNumber", async (req, res) => {
+  try {
+    const phoneNumber = req.params.phoneNumber;
+    const { saving } = req.body;
+
+    const user = await User.findOne({ phoneNumber: phoneNumber });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newAmount = parseInt(user.amount) + parseInt(saving);
+    user.amount = newAmount;
+
+    let newSavingsAmount = user.savings;
+
+    if (parseInt(saving) > 0) {
+      newSavingsAmount -= parseInt(saving);
+      user.savings = newSavingsAmount;
+      await user.save();
+
+      // Create a new savings transaction record for withdrawal
+      const withdrawTransaction = new SavingsTransaction({
+        userId: user._id,
+        type: 'withdraw',
+        amount: parseInt(saving),
+      });
+      await withdrawTransaction.save();
+
+      console.log("Savings decreased by:", saving);
+    }
+
+    await user.save();
+    console.log("New Amount:", newAmount);
+
+    return res.json({ message: 'Amount and Savings updated successfully', newAmount, newSavingsAmount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 export default router;
