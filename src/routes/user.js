@@ -276,15 +276,16 @@ router.get('/transaction/savings/:email', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const savingsTransactions = await SavingsTransaction.find({ userId: user?._id });
+    const savingsTransactions = await SavingsTransaction
+      .find({ userId: user?._id })
+      .sort({ date: -1 }); // Sort by date in descending order (most recent first)
 
-    res.json({ user, savingsTransactions });  // Remove the space between res.json and the object
+    res.json({ user, savingsTransactions });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 
 
