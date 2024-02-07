@@ -267,26 +267,27 @@ router.post("/api/withdraw/:phoneNumber", async (req, res) => {
 });
 
 // savings history
-router.get("/api/savings/history/:userId", async (req, res) => {
+router.get('/transaction/savings/:email', async (req, res) => {
   try {
-    const userId = req.params.userId;
-
-    // Find user by ID
-    const user = await User.findById(userId);
+    const { email } = req.params;
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Retrieve savings transactions for the user
-    const savingsTransactions = await SavingsTransaction.find({ userId: userId });
+    const savingsTransactions = await SavingsTransaction.find({ userId: user?._id });
 
-    return res.json({ user, savingsTransactions });
+    res.json({ user, savingsTransactions });  // Remove the space between res.json and the object
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+
+
 
 
 
