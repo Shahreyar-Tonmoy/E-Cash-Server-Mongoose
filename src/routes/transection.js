@@ -169,21 +169,48 @@ transaction.get("/get/today/agentcashout/transaction/:to", async (req, res) => {
 
 // get transaction by month
 
-transaction.get("/get/month/transaction", async (req, res) => {
+transaction.get('/get/month/transaction', async (req, res) => {
   try {
-    // Logic to retrieve total amount by month
     const result = await Transaction.aggregate([
       {
         $group: {
-          _id: { $month: "$createdAt" }, // Assuming you have a createdAt field in your schema
-          totalAmount: { $sum: "$amounts" },
+          _id: {
+            month: { $month: '$createdAt' },
+            year: { $year: '$createdAt' },
+          },
+          totalAmount: { $sum: '$amounts' },
         },
       },
       {
         $project: {
-          month: "$_id",
+          month: '$_id.month',
+          year: '$_id.year',
           totalAmount: 1,
           _id: 0,
+        },
+      },
+      {
+        $addFields: {
+          monthNames: [
+            null, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+          ],
+        },
+      },
+      {
+        $addFields: {
+          monthName: {
+            $arrayElemAt: [
+              '$monthNames',
+              '$month',
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          month: 1,
+          monthName: 1,
+          totalAmount: 1,
         },
       },
       {
@@ -191,12 +218,23 @@ transaction.get("/get/month/transaction", async (req, res) => {
       },
     ]);
 
+
+
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
+
+
+
+
+
+
+
+
 
 // get transaction by weak
 
@@ -241,81 +279,241 @@ transaction.get("/get/weak/transaction", async (req, res) => {
 
 // get previous month and now month amount deference of percentage
 
-transaction.get("/get/percentage/transaction", async (req, res) => {
+
+// transaction.get("/get/percentage/transaction", async (req, res) => {
+//   try {
+//     // Get the current date
+//     const currentDate = new Date();
+
+//     // Calculate the date for the first day of the current month
+//     const firstDayOfCurrentMonth = new Date(
+//       currentDate.getFullYear(),
+//       currentDate.getMonth(),
+//       1
+//     );
+
+//     // Calculate the date for the first day of the previous month
+//     const firstDayOfPreviousMonth = new Date(
+//       currentDate.getFullYear(),
+//       currentDate.getMonth() - 1,
+//       1
+//     );
+
+//     // Logic to retrieve total amount for the current month
+//     const currentMonthResult = await Transaction.aggregate([
+//       {
+//         $match: {
+//           createdAt: { $gte: firstDayOfCurrentMonth },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: null,
+//           totalAmount: { $sum: "$amounts" },
+//         },
+//       },
+//     ]);
+
+//     // Logic to retrieve total amount for the previous month
+//     const previousMonthResult = await Transaction.aggregate([
+//       {
+//         $match: {
+//           createdAt: {
+//             $gte: firstDayOfPreviousMonth,
+//             $lt: firstDayOfCurrentMonth,
+//           },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: null,
+//           totalAmount: { $sum: "$amounts" },
+//         },
+//       },
+//     ]);
+
+//     // Extract currentMonthTotal and previousMonthTotal
+//     const currentMonthTotal =
+//       currentMonthResult.length > 0 ? currentMonthResult[0].totalAmount : 0;
+//     const previousMonthTotal =
+//       previousMonthResult.length > 0 ? previousMonthResult[0].totalAmount : 0;
+
+//     // Calculate percentage difference
+//     const percentageDifference =
+//       previousMonthTotal !== 0
+//         ? ((currentMonthTotal - previousMonthTotal) /
+//             (previousMonthTotal + currentMonthTotal)) *
+//           100
+//         : 0;
+
+//     console.log(currentMonthTotal, previousMonthTotal, percentageDifference);
+
+//     res.status(200).json({
+//       percentageDifference,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
+
+// transaction.get('/get/percentage/transaction', async (req, res) => {
+//   try {
+//     const result = await Transaction.aggregate([
+//       {
+//         $group: {
+//           _id: {
+//             month: { $month: '$createdAt' },
+//             year: { $year: '$createdAt' },
+//           },
+//           totalAmount: { $sum: '$amounts' },
+//         },
+//       },
+//       {
+//         $project: {
+//           month: '$_id.month',
+//           year: '$_id.year',
+//           totalAmount: 1,
+//           _id: 0,
+//         },
+//       },
+//       {
+//         $addFields: {
+//           monthNames: [
+//             null, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+//           ],
+//         },
+//       },
+//       {
+//         $addFields: {
+//           monthName: {
+//             $arrayElemAt: [
+//               '$monthNames',
+//               '$month',
+//             ],
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           month: 1,
+//           monthName: 1,
+//           totalAmount: 1,
+//         },
+//       },
+//       {
+//         $sort: { month: 1 },
+//       },
+//       {
+//         $group: {
+//           _id: null,
+//           monthlyData: { $push: '$$ROOT' },
+//           totalAmount: { $sum: '$totalAmount' },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           totalAmount: 1,
+//           monthlyData: {
+//             $map: {
+//               input: '$monthlyData',
+//               as: 'item',
+//               in: {
+//                 month: '$$item.month',
+//                 monthName: '$$item.monthName',
+//                 totalAmount: '$$item.totalAmount',
+//                 percentageDifference: {
+//                   $cond: {
+//                     if: { $eq: ['$totalAmount', 0] },
+//                     then: 0,
+//                     else: {
+//                       $multiply: [
+//                         {
+//                           $divide: [
+//                             { $subtract: ['$totalAmount', '$$item.totalAmount'] },
+//                             '$totalAmount',
+//                           ],
+//                         },
+//                         100,
+//                       ],
+//                     },
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     ]);
+
+//     console.log('Aggregation Result:', result);
+
+//     res.status(200).json(result[0] ? result[0].monthlyData : []);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+transaction.get("/get/daily/totalAmount", async (req, res) => {
   try {
-    // Get the current date
     const currentDate = new Date();
 
-    // Calculate the date for the first day of the current month
-    const firstDayOfCurrentMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1
-    );
-
-    // Calculate the date for the first day of the previous month
-    const firstDayOfPreviousMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() - 1,
-      1
-    );
-
-    // Logic to retrieve total amount for the current month
-    const currentMonthResult = await Transaction.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: firstDayOfCurrentMonth },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: "$amounts" },
-        },
-      },
-    ]);
-
-    // Logic to retrieve total amount for the previous month
-    const previousMonthResult = await Transaction.aggregate([
+    const result = await Transaction.aggregate([
       {
         $match: {
           createdAt: {
-            $gte: firstDayOfPreviousMonth,
-            $lt: firstDayOfCurrentMonth,
+            $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
+            $lt: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
           },
         },
       },
       {
         $group: {
-          _id: null,
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
           totalAmount: { $sum: "$amounts" },
         },
       },
+      {
+        $project: {
+          _id: 0,
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: {
+                $dateFromParts: {
+                  year: "$_id.year",
+                  month: "$_id.month",
+                  day: "$_id.day",
+                },
+              },
+            },
+          },
+          totalAmount: 1,
+        },
+      },
+      {
+        $sort: { date: 1 },
+      },
     ]);
 
-    // Extract currentMonthTotal and previousMonthTotal
-    const currentMonthTotal =
-      currentMonthResult.length > 0 ? currentMonthResult[0].totalAmount : 0;
-    const previousMonthTotal =
-      previousMonthResult.length > 0 ? previousMonthResult[0].totalAmount : 0;
-
-    // Calculate percentage difference
-    const percentageDifference =
-      previousMonthTotal !== 0
-        ? ((currentMonthTotal - previousMonthTotal) /
-            (previousMonthTotal + currentMonthTotal)) *
-          100
-        : 0;
-
-    console.log(currentMonthTotal, previousMonthTotal, percentageDifference);
-
-    res.status(200).json({
-      percentageDifference,
-    });
+    res.status(200).json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
+
+
+
+
+
 
 export default transaction;

@@ -40,12 +40,12 @@ const Transaction = mongoose.model("Transaction", transactionSchema);
 const savingsTransactionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   type: {
     type: String,
-    enum: ['deposit', 'withdraw'],
+    enum: ["deposit", "withdraw"],
     required: true,
   },
   amount: {
@@ -58,13 +58,15 @@ const savingsTransactionSchema = new mongoose.Schema({
   },
 });
 
-const SavingsTransaction = mongoose.model('SavingsTransaction', savingsTransactionSchema);
+const SavingsTransaction = mongoose.model(
+  "SavingsTransaction",
+  savingsTransactionSchema
+);
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-     
     },
     email: {
       type: String,
@@ -72,6 +74,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
+      unique: true,
     },
     dateOfBirth: {
       type: String,
@@ -99,4 +102,67 @@ const userSchema = new mongoose.Schema(
 
 const User = mongoose.model("User", userSchema);
 
-export { User, Transaction,SavingsTransaction };
+const depositSchema = new mongoose.Schema(
+  {
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    depositAmount: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
+);
+
+const Deposit = mongoose.model("Deposit", depositSchema);
+
+const mainBalanceSchema = new mongoose.Schema(
+  {
+    mainBalance: {
+      type: Number,
+      default: 0,
+    },
+    name: {
+      type: String,
+      default: "e-cash",
+    },
+    role: {
+      type: String,
+      default: "main",
+    },
+  },
+  { timestamps: true }
+);
+
+const MainBalance = mongoose.model("MainBalance", mainBalanceSchema);
+
+const profitSchema = new mongoose.Schema(
+  {
+    amounts: {
+      type: Number,
+      required: true,
+    },
+    updateType: {
+      type: String,
+      required: true,
+      enum: ['increment', 'decrement'], // Add more types as needed
+    },
+    mainBalance: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MainBalance", 
+    },
+  },
+  { timestamps: true }
+);
+
+const Profit = mongoose.model("Profit", profitSchema);
+
+export { User, Transaction, SavingsTransaction, Deposit, MainBalance,Profit };

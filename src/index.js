@@ -1,12 +1,16 @@
 import connectDB from "./db/index.js";
-
 import { app } from "./app.js";
 import router from "./routes/user.js";
 import { jwtRouter } from "./routes/auth.js";
-
-
 import transaction from "./routes/transection.js";
 import Verify from "././routes/Verify/Varify.js";
+import deposit from "./routes/deposit.js";
+import smsRouter from "./routes/sms/smsRouter.js";
+import mainBalance from "./routes/MainBalance/mainBalance.js";
+
+
+
+
 
 const startServer = (port) => {
   return app.listen(port);
@@ -33,14 +37,20 @@ const PORT = process.env.PORT || 5000;
 
 connectDB()
   .then(() => {
-    // jwt token
-    app.use(jwtRouter);
 
+   
+    // jwt token
+    
+ 
+    app.use(smsRouter);
+    app.use(jwtRouter);
     // verify
     app.use(Verify);
 
     // get & post all user
     app.use(router);
+    app.use(mainBalance);
+    app.use(deposit);
     // transction
     app.use(transaction);
     // end router call

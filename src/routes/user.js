@@ -16,6 +16,9 @@ router.get("/users", async (req, res) => {
   }
 });
 
+// create a post
+ 
+
 // GET route to retrieve one users
 router.get("/users/:email", async (req, res) => {
   try {
@@ -34,6 +37,10 @@ router.get("/users/:email", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
+
+
 
 // POST route to create a new user
 router.post("/add/users", async (req, res) => {
@@ -75,6 +82,33 @@ router.get("/api/user/count", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 })
+
+// all user
+router.get("/api/alluser", async (req, res) => {
+  try {
+    // Assuming 'user' is the role you are interested in
+    const users = await User.find({ role: 'user' });
+
+    res.json( users );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+// all agent
+router.get("/api/allagent", async (req, res) => {
+  try {
+    // Assuming 'user' is the role you are interested in
+    const users = await User.find({ role: 'agent' });
+
+    res.json( users );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 // update
 
