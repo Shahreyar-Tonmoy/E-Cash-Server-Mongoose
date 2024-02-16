@@ -38,9 +38,14 @@ const PORT = process.env.PORT || 5000;
 connectDB()
   .then(() => {
 
+    // Use the chat router for the root namespace
+
+
+
    
     // jwt token
-    
+
+
  
     app.use(smsRouter);
     app.use(jwtRouter);
