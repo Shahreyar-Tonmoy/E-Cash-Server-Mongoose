@@ -224,9 +224,7 @@ transaction.get('/get/month/transaction', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
-
 // get transaction by weak
-
 transaction.get("/get/weak/transaction", async (req, res) => {
   try {
     // Get the current date
