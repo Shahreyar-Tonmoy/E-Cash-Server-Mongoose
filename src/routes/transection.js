@@ -66,8 +66,6 @@ transaction.get("/get/users/transaction/:from", async (req, res) => {
   }
 });
 
-
-
 // get total amount transaction
 
 transaction.get("/get/total/transaction", async (req, res) => {
