@@ -225,15 +225,6 @@ transaction.get('/get/month/transaction', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
 // get transaction by weak
 
 transaction.get("/get/weak/transaction", async (req, res) => {
