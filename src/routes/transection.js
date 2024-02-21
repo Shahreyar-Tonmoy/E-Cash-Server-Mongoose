@@ -66,8 +66,6 @@ transaction.get("/get/users/transaction/:from", async (req, res) => {
   }
 });
 
-
-
 // get total amount transaction
 
 transaction.get("/get/total/transaction", async (req, res) => {
@@ -91,39 +89,39 @@ transaction.get("/get/total/transaction", async (req, res) => {
 
 // get only cash in todays agent transaction
 
+transaction.get(
+  "/get/today/agentcashin/transaction/:from",
+  async (req, res) => {
+    try {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      console.log(req.params.from);
 
+      const todayAgentTransactions = await Transaction.find({
+        createdAt: {
+          $gte: currentDate,
+          $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+        },
+        fromRole: "agent",
+        from: req.params.from,
+      });
 
-transaction.get("/get/today/agentcashin/transaction/:from", async (req, res) => {
-  try {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    console.log(req.params.from);
+      const totalAmountTodayByAgents = todayAgentTransactions.reduce(
+        (total, transaction) => {
+          return total + transaction.amounts;
+        },
+        0
+      );
 
-    const todayAgentTransactions = await Transaction.find({
-      createdAt: {
-        $gte: currentDate,
-        $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
-      },
-      fromRole: 'agent',
-      from: req.params.from, 
-    });
-
-
-
-
-
-    const totalAmountTodayByAgents = todayAgentTransactions.reduce((total, transaction) => {
-      return total + transaction.amounts;
-    }, 0);
-
-    res.status(200).json({
-      totalAmountTodayByAgents: totalAmountTodayByAgents,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+      res.status(200).json({
+        totalAmountTodayByAgents: totalAmountTodayByAgents,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   }
-});
+);
 
 // get only cash out todays agent transaction
 
@@ -138,17 +136,16 @@ transaction.get("/get/today/agentcashout/transaction/:to", async (req, res) => {
         $gte: currentDate,
         $lt: new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
       },
-      fromRole: 'user',
-      to: req.params.to, 
+      fromRole: "user",
+      to: req.params.to,
     });
 
-
-
-
-
-    const totalAmountTodayByAgents = todayAgentTransactions.reduce((total, transaction) => {
-      return total + transaction.amounts;
-    }, 0);
+    const totalAmountTodayByAgents = todayAgentTransactions.reduce(
+      (total, transaction) => {
+        return total + transaction.amounts;
+      },
+      0
+    );
 
     res.status(200).json({
       totalAmountTodayByAgents: totalAmountTodayByAgents,
@@ -159,32 +156,24 @@ transaction.get("/get/today/agentcashout/transaction/:to", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
 // get transaction by month
 
-transaction.get('/get/month/transaction', async (req, res) => {
+transaction.get("/get/month/transaction", async (req, res) => {
   try {
     const result = await Transaction.aggregate([
       {
         $group: {
           _id: {
-            month: { $month: '$createdAt' },
-            year: { $year: '$createdAt' },
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
           },
-          totalAmount: { $sum: '$amounts' },
+          totalAmount: { $sum: "$amounts" },
         },
       },
       {
         $project: {
-          month: '$_id.month',
-          year: '$_id.year',
+          month: "$_id.month",
+          year: "$_id.year",
           totalAmount: 1,
           _id: 0,
         },
@@ -192,17 +181,26 @@ transaction.get('/get/month/transaction', async (req, res) => {
       {
         $addFields: {
           monthNames: [
-            null, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+            null,
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
           ],
         },
       },
       {
         $addFields: {
           monthName: {
-            $arrayElemAt: [
-              '$monthNames',
-              '$month',
-            ],
+            $arrayElemAt: ["$monthNames", "$month"],
           },
         },
       },
@@ -218,23 +216,12 @@ transaction.get('/get/month/transaction', async (req, res) => {
       },
     ]);
 
-
-
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
-
-
-
-
-
-
-
 
 // get transaction by weak
 
@@ -278,7 +265,6 @@ transaction.get("/get/weak/transaction", async (req, res) => {
 });
 
 // get previous month and now month amount deference of percentage
-
 
 // transaction.get("/get/percentage/transaction", async (req, res) => {
 //   try {
@@ -464,8 +450,16 @@ transaction.get("/get/daily/totalAmount", async (req, res) => {
       {
         $match: {
           createdAt: {
-            $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-            $lt: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
+            $gte: new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              1
+            ),
+            $lt: new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth() + 1,
+              1
+            ),
           },
         },
       },
@@ -508,12 +502,5 @@ transaction.get("/get/daily/totalAmount", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
-
-
-
-
-
 
 export default transaction;
