@@ -265,8 +265,6 @@ transaction.get("/get/weak/transaction", async (req, res) => {
 });
 
 // get previous month and now month amount deference of percentage
-
-
 // transaction.get("/get/percentage/transaction", async (req, res) => {
 //   try {
 //     // Get the current date
