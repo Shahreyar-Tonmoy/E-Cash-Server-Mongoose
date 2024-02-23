@@ -440,7 +440,6 @@ transaction.get("/get/weak/transaction", async (req, res) => {
 //     res.status(500).json({ message: 'Internal Server Error' });
 //   }
 // });
-
 transaction.get("/get/daily/totalAmount", async (req, res) => {
   try {
     const currentDate = new Date();
