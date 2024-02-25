@@ -431,9 +431,7 @@ transaction.get("/get/weak/transaction", async (req, res) => {
 //         },
 //       },
 //     ]);
-
 //     console.log('Aggregation Result:', result);
-
 //     res.status(200).json(result[0] ? result[0].monthlyData : []);
 //   } catch (error) {
 //     console.error(error);
